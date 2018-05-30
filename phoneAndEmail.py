@@ -37,5 +37,5 @@ if len(matches) > 0:
     print('Copied to clipboard:')
     print('\n'.join(matches))
 else:
-    print('No phone numbers or email addresses found.')
+    print('No phone numbers or email addresses found in contents.')
     
