@@ -36,6 +36,16 @@ if len(matches) > 0:
     pyperclip.copy('**'.join(matches))
     print('Copied to clipboard:')
     print('\n'.join(matches))
+    saveToFile = pyperclip.paste()        #To write the contents into a file.
+    with open('new.txt','w')as gotFile:
+        gotFile.write(saveToFile)
 else:
     print('No phone numbers or email addresses found in contents.')
     
+#To search for a particular email in the file.
+searchfile = open("new.txt", "r")
+myWord = str(input('what word to search:'))
+for line in searchfile:
+    if myWord in line:
+        print(line)
+searchfile.close()
