@@ -1,7 +1,17 @@
 #! python3
 # phoneAndEmail.py - Finds phone numbers and email addresses on the clipboard.
 
-import pyperclip, re
+import pyperclip, re , os , sys , pprint
+
+def searchWord(myFile1):
+    searchfile = open(myFile1, "r")
+    myWord = str(input('what word to search:'))
+    for line in searchfile:
+        if myWord in line:
+            print(line)
+    searchfile.close()
+    return
+
 
 phoneRegex = re.compile(r'''(
     (\d{3}|\(\d{3}\))?                # area code
@@ -33,19 +43,44 @@ for groups in emailRegex.findall(text):
 
 # Copy results to the clipboard.
 if len(matches) > 0:
-    pyperclip.copy('**'.join(matches))
-    print('Copied to clipboard:')
+    pyperclip.copy('\n'.join(matches))
+    print('Copied to clipboard:\n')
     print('\n'.join(matches))
-    saveToFile = pyperclip.paste()        #To write the contents into a file.
-    with open('new.txt','w')as gotFile:
+    print('\n')
+    saveToFile = pyperclip.paste()#To write the contents into a file.
+    print('Enter the file name to save the contents(email and phone number)\n')
+    myFile = str(input())
+    with open(myFile,'a')as gotFile:
         gotFile.write(saveToFile)
+        print('\n')
 else:
-    print('No phone numbers or email addresses found in contents.')
-    
+    print('No phone numbers or email addresses found.\n')
+
+print('\n')
+
 #To search for a particular email in the file.
-searchfile = open("new.txt", "r")
-myWord = str(input('what word to search:'))
-for line in searchfile:
-    if myWord in line:
-        print(line)
-searchfile.close()
+print('To perform search operation on a file,print (y/Y)\n')
+flag = input()
+if((flag == "Y") or ("y" == flag)):
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    for f in files:
+        print(f)
+    print('Name of the file on with Search has to be done:\n')
+    myFile1 = str(input())
+    searchw = searchWord(myFile1)
+
+else:
+    print('exits program')
+    sys.exit()
+
+
+
+## TO PRINT THE LINES THAT COMES AFTER THE KEYWORD.
+##with open("new.txt", "r") as f:
+##    searchlines = f.readlines()
+##myWord = str(input('what word to search:')) 
+##for i, line in enumerate(searchlines):
+##    if myWord in line: 
+##        for l in searchlines[i:i+3]: print(l)
+##        print
+    
