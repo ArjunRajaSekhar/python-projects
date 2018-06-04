@@ -23,7 +23,7 @@ for link in soup.find_all('a', href=True):
 openFile.close()
 
 
-#To remove any thing other than links.
+#To remove any thing other than links eg #.
 openFile3 = open('output.txt','r')
 lines =openFile3.readlines()
 openFile3.close()
@@ -46,7 +46,7 @@ openFile2.close()
 
 
 
-#To print cleane text file
+#To print cleaned text file
 openFile4 =open(saveToFile1,'r')
 for line in openFile4:
      print(line)
