@@ -1,9 +1,56 @@
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup,NavigableString, Tag
 from bs4.dammit import EncodingDetector
 import requests
 import pandas as pd
 from pandas import ExcelWriter
 from pandas import ExcelFile
+import codecs
+
+def html_to_text(html):
+    "Creates a formatted text email message as a string from a rendered html template (page)"
+    soup = BeautifulSoup(html, 'html.parser')
+    # Ignore anything in head
+    body, text = soup.body, []
+    for element in body.descendants:
+        # We use type and not isinstance since comments, cdata, etc are subclasses that we don't want
+        if type(element) == NavigableString:
+            parent_tags = (t for t in element.parents if type(t) == Tag)
+            hidden = False
+            for parent_tag in parent_tags:
+                # Ignore any text inside a non-displayed tag
+                # We also behave is if scripting is enabled (noscript is ignored)
+                # The list of non-displayed tags and attributes from the W3C specs:
+                if (parent_tag.name in ('area', 'base', 'basefont', 'datalist', 'head', 'link',
+                                        'meta', 'noembed', 'noframes', 'param', 'rp', 'script',
+                                        'source', 'style', 'template', 'track', 'title', 'noscript') or
+                    parent_tag.has_attr('hidden') or
+                    (parent_tag.name == 'input' and parent_tag.get('type') == 'hidden')):
+                    hidden = True
+                    break
+            if hidden:
+                continue
+
+            # remove any multiple and leading/trailing whitespace
+            string = ' '.join(element.string.split())
+            if string:
+                if element.parent.name == 'a':
+                    a_tag = element.parent
+                    # replace link text with the link
+                    string = a_tag['href']
+                    # concatenate with any non-empty immediately previous string
+                    if (    type(a_tag.previous_sibling) == NavigableString and
+                            a_tag.previous_sibling.string.strip() ):
+                        text[-1] = text[-1] + ' ' + string
+                        continue
+                elif element.previous_sibling and element.previous_sibling.name == 'a':
+                    text[-1] = text[-1] + ' ' + string
+                    continue
+                elif element.parent.name == 'p':
+                    # Add extra paragraph formatting newline
+                    string = '\n' + string
+                text += [string]
+    doc = '\n'.join(text)
+    return doc
 
 df = pd.read_excel('MASTER.xlsx', sheetname='360 Company Profiles')
 print("Column headings:")
@@ -60,3 +107,23 @@ for i in df.index:
     for line in openFile4:
          print(line)
     openFile4.close()
+    
+
+
+    openFile5 = open(saveToFile1,'r')
+    saveToFile2 = str(df['Updated Company Name'][i])+'Html.html'
+    for line in openFile5:
+        requestHtml = requests.get(line)
+        htm = requestHtml.content
+        openFile6 = open(saveToFile2,'a')
+        openFile6.write(str(htm))
+        saveToFile3= str(df['Updated Company Name'][i])+'Data.txt'
+        for contents in saveToFile2:
+            openFile7 = open(saveToFile3,'a')
+            txt = codecs.open(saveToFile2,'r')
+            html = txt.read()
+            ouput =html_to_text(html)
+            openFile7.close()
+    openFile5.close()
+    openFile6.close()
+    print
